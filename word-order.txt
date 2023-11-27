@@ -1,12 +1,9 @@
 Carrier - 10 bits (2 x 5 bits between 26 capital chars)
 Flight no. - 14 bits
 
-Dest - 15 bits (3 x 5 bits between 26 capital chars)
-Arr - 15 bits (3 x 5 bits between 26 capital chars)
+Code - 15 bits (3 x 5 bits between 26 capital chars)
 
-No. locs above 2 - 2 bits (up to 4 dests)
-Limitation: Does not work for disjointed itins (e.g. BOS-LON IST-JFK)
-vs. joined itins (e.g. BOS-LON LON-IST)
+Test for disjoint itins
 
 ===Dept===
 Years past 1970 - 8 bits (max 255, max year is 2225)
@@ -14,7 +11,7 @@ Date - 5 bits
 Month - 4 bits
 Hour - 5 bits
 Minute - 6 bits
-UTC offset - 6 bits (index within 38 tz's)
+UTC offset - 10 bits (index within list of all possible IANA tz's from wikipedia (597 tz's))
 ==========
 
 ===Arr===
@@ -23,7 +20,7 @@ Date - 5 bits
 Month - 4 bits
 Hour - 5 bits
 Minute - 6 bits
-UTC offset - 6 bits (index within 38 tz's)
+UTC offset - 10 bits (index within list of all possible IANA tz's from wikipedia (597 tz's))
 ==========
 
 ====EXTENSION====
