@@ -26,3 +26,28 @@ UTC offset - 10 bits (index within list of all possible IANA tz's from wikipedia
 ====EXTENSION====
 Price - 32 bit
 Currency - 15 bits (3 x 5 bits between 26 capital chars)
+
+====FORMAT=======
+NO. FLIGHTS (7 flights max) | FLIGHT0 | FLIGHT1 | ... | FLIGHT6
+
+====READING======
+Get the number of flights from the first 3 bits
+Read in each flight, and
+    Get Carrier
+    Get Flight no.
+    Get Dept code
+    Get Arr code
+    Get Dept datetime
+        Get year
+        Get date
+        Get month
+        Get hour
+        Get minute
+        Get UTC offset
+    Get Arr datetime
+        Get year
+        Get date
+        Get month
+        Get hour
+        Get minute
+        Get UTC offset
