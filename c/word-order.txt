@@ -1,3 +1,5 @@
+1 flight in 128 bits
+
 Carrier - 10 bits (2 x 5 bits between 26 capital chars)
 Flight no. - 14 bits
 
@@ -5,8 +7,11 @@ Code - 15 bits (3 x 5 bits between 26 capital chars)
 
 Test for disjoint itins
 
+
+
 ===Dept===
 Years past 1970 - 8 bits (max 255, max year is 2225)
+Years past 1970 - 7 bits (max 127, max year is 2097) 
 Date - 5 bits
 Month - 4 bits
 Hour - 5 bits
@@ -16,6 +21,7 @@ UTC offset - 10 bits (index within list of all possible IANA tz's from wikipedia
 
 ===Arr===
 Years past 1970 - 8 bits (max 255, max year is 2225)
+Years past 1970 - 7 bits (max 127, max year is 2097)
 Date - 5 bits
 Month - 4 bits
 Hour - 5 bits
