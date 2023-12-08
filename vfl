@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+
+# Import the timezones
+# Ask for all the flightinformation
+# 
+
+import sys
+from flightio import FlightIO
+
+# Usage:
+#        vfl -c [input fname (or stdin)]
+#        vfl -d [input fname] (send to stdout)
+
+def main():
+    compress_or_decompress = True # -c is default
+    # print("Let's make vfl!")
+
+    try:
+        assert(sys.argv[1] == "-c" or sys.argv[1] == "-d")
+        if (sys.argv[1] == "-d"):
+            compress_or_decompress = False
+
+    except:
+        print("vfl [-c | -d] [input fname (or stdin)]")
+        sys.exit()
+    
+    IO_module = FlightIO(compress_or_decompress)
+
+if __name__ == '__main__':
+    main()
