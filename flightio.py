@@ -33,7 +33,11 @@ class FlightIO:
 
     def inputInfo(self):
         self.__parse_num_flights()
+        self.__parse_all_flights()
         
+        for fl in self.flights:
+            print("Printing flight")
+            fl.print_object()
 
         pass
 
@@ -43,6 +47,12 @@ class FlightIO:
         assert(self.num_flights <= self.MAX_NUM_FLIGHTS 
                and self.num_flights >= self.MIN_NUM_FLIGHTS)
         
+        
+        
+    def __parse_all_flights(self):
+        for pos in range(self.num_flights):
+            itin = Itinerary() # Input info is done in Itinerary.__init__()
+            self.flights.append(itin)
         
     def outputInfo(self):
         print("Decompressing")
