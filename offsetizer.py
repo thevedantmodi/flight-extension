@@ -15,6 +15,7 @@ import airportsdata
 
 from datetime import datetime
 from pytz import timezone
+from zoneinfo import ZoneInfo
 import pytz
 
 class Offsetizer:
@@ -31,7 +32,7 @@ class Offsetizer:
         
         self.__get_tz(IATA)
         
-        self.
+        datetime.replace(tzinfo=ZoneInfo('Asia/Tokyo')
         
         pass
     
