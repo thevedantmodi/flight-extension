@@ -44,20 +44,27 @@ class Itinerary:
     arr_code = ""
     arr_date = datetime(1970, 1, 1) # UTC time, store offset separately
     
-    offsetizer = Offsetizer()
+    offset = Offsetizer()
 
     def __init__(self) -> None:
+        # Build flight data
         self.__parse_carrier()
         self.__parse_flight_no()
         self.__parse_dept_code()
         self.__parse_arr_code()
+        
+        # Build dates in flight data
         self.__parse_dept_date()
         self.__parse_arr_date()
         
+        # Localize dates
+        self.offset.offsetize(self.dept_code, self.dept_date)
+        
     def print_object(self):
         print(self.carrier, self.flight_no)
-        print(self.dept_code, self.arr_code)
-        print(self.dept_date , self.arr_date)
+    
+        print("\033[1m Departure:\033[0m",self.dept_code, self.dept_date)
+        print("\033[1m Arrival:\033[0m",self.arr_code, self.arr_date)
 
     def __parse_carrier(self):
           self.carrier = input("Enter carrier (two chars):\n")
@@ -80,16 +87,15 @@ class Itinerary:
         assert(len(self.arr_code) == self.CODE_LENGTH)
         
     def __parse_dept_date(self):
-        print("in dept date")
+        # Build date
         date_str = ""
         date_str += (self.__parse_year()) + " "
         date_str += (self.__parse_month()) + " "
         date_str += (self.__parse_date()) + " "
         date_str += (self.__parse_hour()) + " "
         date_str += (self.__parse_minute()) + " "
-        print(date_str)
-        fmt = "%Y %m %d %H %M "
-        self.dept_date = datetime.strptime(date_str, fmt)
+        
+        self.dept_date = datetime.strptime(date_str, "%Y %m %d %H %M ")
     
     
     def __parse_year(self):
@@ -123,6 +129,7 @@ class Itinerary:
         return str(mi)
     
     def __parse_arr_date(self):
+        # Build date
         date_str = ""
         date_str += (self.__parse_year()) + " "
         date_str += (self.__parse_month()) + " "

@@ -36,7 +36,6 @@ class FlightIO:
         self.__parse_all_flights()
         
         for fl in self.flights:
-            print("Printing flight")
             fl.print_object()
 
         pass
