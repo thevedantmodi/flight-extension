@@ -1,0 +1,38 @@
+#!/Users/vedantmodi/Desktop/dev-work/vfl/env/bin/python
+
+# Import the timezones
+# Ask for all the flightinformation
+# 
+
+import sys
+from flightio import FlightIO
+
+# Usage:
+#        vfl -c [input fname (or stdin)]
+#        vfl -d [input fname] (send to stdout)
+
+def main():
+    compress_or_decompress = True # -c is default
+    # print("Let's make vfl!")
+
+    try:
+        assert(sys.argv[1] == "-c" or sys.argv[1] == "-d")
+        if (sys.argv[1] == "-d"):
+            compress_or_decompress = False
+
+    except:
+        sys.exit("vfl [-c | -d] [input fname (or stdin)]")
+    
+    IO_module = FlightIO(compress_or_decompress)
+
+def bye():
+    print("Thanks for using vfl!")
+    sys.exit()
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        bye()
+    except EOFError:
+        bye()
