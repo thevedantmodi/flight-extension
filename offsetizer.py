@@ -14,9 +14,7 @@
 import airportsdata
 
 from datetime import datetime
-from pytz import timezone
 from zoneinfo import ZoneInfo
-import pytz
 
 class Offsetizer:
     airports = airportsdata.load('IATA')
@@ -34,4 +32,12 @@ class Offsetizer:
     
     # Get tz from database
     def __get_tz(self, IATA: str):
-        return self.airports[IATA]["tz"]
+        tz = ""
+        try:
+            tz = self.airports[IATA]["tz"]
+        except KeyError:
+            tz = list(self.macs[IATA]['airports'].values())[0]['tz']
+            # tz = "America/New_York"
+        finally:
+            assert(tz != "")
+            return tz

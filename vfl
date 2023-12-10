@@ -21,10 +21,18 @@ def main():
             compress_or_decompress = False
 
     except:
-        print("vfl [-c | -d] [input fname (or stdin)]")
-        sys.exit()
+        sys.exit("vfl [-c | -d] [input fname (or stdin)]")
     
     IO_module = FlightIO(compress_or_decompress)
 
+def bye():
+    print("Thanks for using vfl!")
+    sys.exit()
+
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        bye()
+    except EOFError:
+        bye()
