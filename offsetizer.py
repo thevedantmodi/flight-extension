@@ -23,12 +23,15 @@ class Offsetizer:
     def __init__(self) -> None:
         pass
     
-    def offsetize(self, IATA: str, datetime: datetime):
+    def offsetize(self, IATA: str, tmstmp: datetime):
         # IATA matches invariants
         assert len(IATA) == 3
         assert IATA.isupper()
         
-        return datetime.replace(tzinfo=ZoneInfo(self.__get_tz(IATA)))
+        unix_epoch = datetime(1970, 1, 1)
+        assert tmstmp >= unix_epoch
+        
+        return tmstmp.replace(tzinfo=ZoneInfo(self.__get_tz(IATA)))
     
     # Get tz from database
     def __get_tz(self, IATA: str):
@@ -36,8 +39,11 @@ class Offsetizer:
         try:
             tz = self.airports[IATA]["tz"]
         except KeyError:
-            tz = list(self.macs[IATA]['airports'].values())[0]['tz']
-            # tz = "America/New_York"
-        finally:
+            try:
+                tz = list(self.macs[IATA]['airports'].values())[0]['tz']
+            except KeyError:
+                raise KeyError("IATA code", IATA, "not recognized")
+        else:
             assert(tz != "")
+        finally:
             return tz
