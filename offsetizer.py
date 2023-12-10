@@ -30,11 +30,7 @@ class Offsetizer:
         assert len(IATA) == 3
         assert IATA.isupper()
         
-        self.__get_tz(IATA)
-        
-        datetime.replace(tzinfo=ZoneInfo('Asia/Tokyo')
-        
-        pass
+        return datetime.replace(tzinfo=ZoneInfo(self.__get_tz(IATA)))
     
     # Get tz from database
     def __get_tz(self, IATA: str):

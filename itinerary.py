@@ -58,7 +58,9 @@ class Itinerary:
         self.__parse_arr_date()
         
         # Localize dates
-        self.offset.offsetize(self.dept_code, self.dept_date)
+        self.dept_date = self.offset.offsetize(self.dept_code, self.dept_date)
+        self.arr_date = self.offset.offsetize(self.arr_code, self.arr_date)
+        
         
     def print_object(self):
         print(self.carrier, self.flight_no)
