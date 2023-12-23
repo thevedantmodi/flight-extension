@@ -13,12 +13,14 @@
 
 from datetime import datetime
 from offsetizer import Offsetizer
+import sys
 
 class Itinerary:
 
     CARRIER_LENGTH = 2
     MIN_FLIGHT_NO = 0
     MAX_FLIGHT_NO = 9999
+    FLIGHT_NO_LEN = 4
     CODE_LENGTH = 3
     
     MIN_YEAR = 1970
@@ -46,99 +48,161 @@ class Itinerary:
     
     offset = Offsetizer()
 
-    def __init__(self) -> None:
-        # Build flight data
-        self.__parse_carrier()
-        self.__parse_flight_no()
-        self.__parse_dept_code()
-        self.__parse_arr_code()
-        
-        # Build dates in flight data
-        self.__parse_dept_date()
-        self.__parse_arr_date()
-        
-        # Localize dates
-        self.dept_date = self.offset.offsetize(self.dept_code, self.dept_date)
-        self.arr_date = self.offset.offsetize(self.arr_code, self.arr_date)
+    def __init__(self, action, file) -> None:
+        if action == 'i': # Inputting flight
+            promptMsg = False
+            if file == sys.stdin: promptMsg = True
+            
+            if promptMsg:
+                print("Format:")
+                print("CA | FLNO | DEP | YYYY | MM | DD | HH | MM \
+                    | ARR | YYYY | MM | DD | HH | MM")
+            
+            # Remove spaces, standardizes if there is space or not
+            fl_line = file.readline().rstrip().replace(" ", "")
+            
+            # Build flight data
+            self.__parse_carrier(fl_line[0:2])
+            self.__parse_flight_no(fl_line[2:6])
+            
+            self.__parse_dept_code(fl_line[6:9])
+            self.dept_date = self.__parse_full_date(fl_line, 9)
+            
+            self.__parse_arr_code(fl_line[21:24])
+            self.arr_date = self.__parse_full_date(fl_line, 24)
+            
+            # Localize dates
+            self.dept_date = self.offset.offsetize(self.dept_code, self.dept_date)
+            self.arr_date = self.offset.offsetize(self.arr_code, self.arr_date)
+        else: # Outputting flight
+            fl_line = file.readline().rstrip()
+            self.__read_flight(fl_line)
+            pass
         
         
     def print_object(self):
-        print(self.carrier, self.flight_no)
+        print(self.carrier, self.flight_no, \
+            self.dept_code, self.dept_date.isoformat(),
+            self.arr_code, self.arr_date.isoformat())
+        
+    def print_object_as_input(self):
+        print(self.carrier, self.flight_no, self.dept_code, \
+            self.dept_date.year, self.dept_date.month, self.dept_date.day, \
+            self.dept_date.hour, self.dept_date.minute,  self.arr_code, \
+            self.arr_date.year, self.arr_date.month, self.arr_date.day, \
+            self.arr_date.hour, self.arr_date.minute)
     
-        print("\033[1m Departure:\033[0m",self.dept_code, \
-            self.dept_date.isoformat())
-        print("\033[1m Arrival:\033[0m",self.arr_code, \
-            self.arr_date.isoformat())
+        # print("\033[1m Departure:\033[0m",self.dept_code, \
+        #     self.dept_date.isoformat())
+        # print("\033[1m Arrival:\033[0m",self.arr_code, \
+        #     self.arr_date.isoformat())
 
-    def __parse_carrier(self):
-          self.carrier = input("Enter carrier (two chars):\n")
-          assert(self.carrier.isupper())
-          assert(len(self.carrier) == self.CARRIER_LENGTH)
-
-    def __parse_flight_no(self):
-          self.flight_no = int(input("Enter flight number (4 digits):\n"))
-          assert(self.flight_no >= self.MIN_FLIGHT_NO)
-          assert(self.flight_no <= self.MAX_FLIGHT_NO)
+    def __read_flight(self, line):
+        count = 0
+        for word in line.split():
+            match count:
+                case 0:
+                    #carrier
+                    self.__parse_carrier(word)
+                    # print(self.carrier)
+                    pass
+                case 1:
+                    # flight number
+                    self.__parse_flight_no(word)
+                    pass
+                case 2:
+                    # dept code
+                    self.__parse_dept_code(word)
+                    pass
+                case 3:
+                    # dept date
+                    self.dept_date = self.__read_date(word)
+                    pass
+                case 4:
+                    # arr code
+                    self.__parse_arr_code(word)
+                    pass
+                case 5:
+                    # arr date
+                    self.arr_date = self.__read_date(word)
+                    pass
+            count = count + 1
+        pass
     
-    def __parse_dept_code(self):
-        self.dept_code = input("Enter departure code (three chars):\n")
+    
+    def __parse_carrier(self, fl_data):
+
+        self.carrier = fl_data
+        assert(self.carrier.isupper())
+        assert(len(self.carrier) == self.CARRIER_LENGTH)
+        
+    def __clean_flight_no(self, fl_num):
+        # propagate 0's if the greater digits are not there
+        if (len(fl_num) != self.FLIGHT_NO_LEN):
+            return fl_num.zfill(4) 
+        else:
+            return fl_num
+
+    def __parse_flight_no(self, fl_data):
+        fl_num = self.__clean_flight_no(fl_data)
+        self.flight_no = int(fl_num)
+        assert(self.flight_no >= self.MIN_FLIGHT_NO)
+        assert(self.flight_no <= self.MAX_FLIGHT_NO)
+    
+    def __parse_dept_code(self, fl_data):
+        self.dept_code = fl_data
+        
         assert(self.dept_code.isupper())
         assert(len(self.dept_code) == self.CODE_LENGTH)
         
-    def __parse_arr_code(self):
-        self.arr_code = input("Enter arrival code (three chars):\n")
+    def __parse_arr_code(self, fl_data):
+        self.arr_code = fl_data
+        
         assert(self.arr_code.isupper())
         assert(len(self.arr_code) == self.CODE_LENGTH)
         
-    def __parse_dept_date(self):
+    def __read_date(self, fl_data):
+        return datetime.fromisoformat(fl_data)
+        
+    def __parse_full_date(self, fl_line, offset):
         # Build date
         date_str = ""
-        date_str += (self.__parse_year()) + " "
-        date_str += (self.__parse_month()) + " "
-        date_str += (self.__parse_date()) + " "
-        date_str += (self.__parse_hour()) + " "
-        date_str += (self.__parse_minute()) + " "
-        
-        self.dept_date = datetime.strptime(date_str, "%Y %m %d %H %M ")
+        date_str += (self.__parse_year(fl_line, offset)) + " "
+        date_str += (self.__parse_month(fl_line, offset)) + " "
+        date_str += (self.__parse_date(fl_line, offset)) + " "
+        date_str += (self.__parse_hour(fl_line, offset)) + " "
+        date_str += (self.__parse_minute(fl_line, offset)) + " "
+        return datetime.strptime(date_str, "%Y %m %d %H %M ")
     
     
-    def __parse_year(self):
-        yr = int(input("Enter year (YYYY):\n"))
+    def __parse_year(self, fl_line, offset):
+        yr = int(fl_line[offset:offset+4])
+
         assert(yr >= self.MIN_YEAR)
         assert(yr <= self.MAX_YEAR)
         return str(yr)
     
-    def __parse_month(self):
-        mn = int(input("Enter month (MM):\n"))
+    def __parse_month(self, fl_line, offset):
+        mn = int(fl_line[offset + 4:offset + 6])
         assert(mn >= self.MIN_MONTH)
         assert(mn <= self.MAX_MONTH)
         return str(mn)
     
-    def __parse_date(self):
-        da = int(input("Enter day (DD):\n"))
+    def __parse_date(self, fl_line, offset):
+        da = int(fl_line[offset + 6:offset + 8])
         assert(da >= self.MIN_DAY)
         assert(da <= self.MAX_DAY)
         return str(da)
     
-    def __parse_hour(self):
-        hr = (int(input("Enter hour (HH):\n")))
+    def __parse_hour(self, fl_line, offset):
+        hr = int(fl_line[offset + 8:offset + 10])
         assert(hr >= self.MIN_HOUR)
         assert(hr <= self.MAX_HOUR)
         return str(hr)
     
-    def __parse_minute(self):
-        mi = int(input("Enter minute (MM):\n"))
+    def __parse_minute(self, fl_line, offset):
+        mi = int(fl_line[offset + 10:offset + 12])
         assert(mi >= self.MIN_MINUTES)
         assert(mi <= self.MAX_MINUTES)
         return str(mi)
     
-    def __parse_arr_date(self):
-        # Build date
-        date_str = ""
-        date_str += (self.__parse_year()) + " "
-        date_str += (self.__parse_month()) + " "
-        date_str += (self.__parse_date()) + " "
-        date_str += (self.__parse_hour()) + " "
-        date_str += (self.__parse_minute()) + " "
-        self.arr_date = datetime.strptime(date_str, "%Y %m %d %H %M ")
-        pass

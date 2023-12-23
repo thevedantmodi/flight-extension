@@ -7,27 +7,35 @@
 import sys
 from flightio import FlightIO
 
+STDIN_FILENAME = "-"
+
 # Usage:
-#        vfl -c [input fname (or stdin)]
+#        vfl -c [input fname (- for stdin)]
 #        vfl -d [input fname] (send to stdout)
 
 def main():
     compress_or_decompress = True # -c is default
     # print("Let's make vfl!")
+    
 
     try:
         assert(sys.argv[1] == "-c" or sys.argv[1] == "-d")
+        if (sys.argv[1] == "-c"):
+            compress_or_decompress = True
+        
         if (sys.argv[1] == "-d"):
             compress_or_decompress = False
 
+        assert(sys.argv[2])
     except:
         sys.exit("vfl [-c | -d] [input fname (or stdin)]")
-    
-    IO_module = FlightIO(compress_or_decompress)
+    with open(sys.argv[2], 'r') if sys.argv[2] != "-" else sys.stdin as f:
+        IO_module = FlightIO(compress_or_decompress, f)
+        assert(IO_module)
 
 def bye():
     print("Thanks for using vfl!")
-    sys.exit()
+    sys.exit(0)
 
 if __name__ == '__main__':
     try:

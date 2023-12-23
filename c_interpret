@@ -1,0 +1,299 @@
+#!/usr/sup/bin/python
+
+# -----------------------------------------------------------------------------
+#
+#                             c_interpret
+#                           Author: Noah Mendelsohn
+#
+#     A generalization of the ply 3.9 calc program to do more complete
+#     C integer expressions and simple assignment and declaration
+#     statements.
+#
+#     Note that the PLY parsing package was written by David M. Beazley 
+#     dave@dabeaz.com
+#
+#     NEEDSWORK: decide whether messages go to stdout or
+#     stderr. Inconsistent for now.
+#
+# -----------------------------------------------------------------------------
+
+import sys, os
+import argparse
+import readline          # if imported, history handling on raw_input improves
+
+from c_engine.c_statement import C_statement
+
+CMD_CHAR = "*"                             # prefix for console commands
+
+DEFAULT_INPUT_FILENAME = "_default.cfrag"  # read automatically, silently
+
+STDIN_FILENAME = '-'            # supply this for filename to read stdin
+
+sys.path.insert(0, "./ply-3.9")
+
+if sys.version_info[0] >= 3:
+    raw_input = input
+
+
+#*******************************************************************
+#*******************************************************************
+#                     parseargs
+#
+#    Use Python standard argument parser to parse arguments and provide help
+#*******************************************************************
+#*******************************************************************
+
+def parseargs():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--quiet", "-q",  help="Don't prompt for input", action="store_true")
+    parser.add_argument("--hide-results", "-hr", help="Don't prompt for input", action="store_true")
+    
+    parser.add_argument("--explain", "-ex",  help="Show step-by-step expression evaluation", action="store_true")
+    parser.add_argument("--no-default",   help="Don't automatically read %s" % DEFAULT_INPUT_FILENAME, action="store_true")
+    parser.add_argument("--noecho", "-noe",  help="Don't echo each statement before parsing (often useful with quiet)", action="store_true")
+
+    parser.add_argument('files', nargs="*", help="Input files. Use \"-\" for stdin")
+    args = parser.parse_args()
+    return parser.parse_args()
+
+
+
+def text_from_lexspan(line, lexspan):
+    return line[lexspan[0]:lexspan[1]+1]
+
+def hyphens_from_lexspan(lexspan):
+    start = lexspan[0]
+    hyphen_len = lexspan[1] - start + 1
+    return (' ' * lexspan[0]) + ('-' * hyphen_len)
+
+# NEEDSWORK: The way the prefixing below is done probably leads to lots
+#            of unnecessary string concatenation in Python
+
+INDENT = "        "   # indent for printout of sub computations
+
+#-------------------------------------------------------- 
+#        Subexpression printing functions
+#-------------------------------------------------------- 
+
+def print_subexpression(line,subexp):
+    print(INDENT  + "Sub-expression: " + line)
+    print(INDENT  + "                " + hyphens_from_lexspan(subexp.lexspan))
+    if subexp.c_error:
+        print(INDENT  + "Error: %s" % (subexp.c_error))
+    else:
+        print(INDENT  + "Evaluates to: %d %s %s" % (subexp.numeric_value(), subexp.hex(), "signed" if subexp.signed else "unsigned"))
+
+def depth_first_walk(line, result,first_time=True):
+    if hasattr(result,'subexpressions'):     # real subexpression
+        for subexp in result.subexpressions:
+            first_time = depth_first_walk(line,subexp, first_time)
+        if not first_time:
+#            print INDENT  + "---------------------------------------------------------"
+            print
+        print_subexpression(line,result)
+        return False
+    else:                          # string
+        return first_time
+
+
+
+#-------------------------------------------------------- 
+#        do_a_line
+#-------------------------------------------------------- 
+
+def do_a_line(line, echo=True, explain=False, hide_results = False, prefix = "Statement: ", result = None):
+    if echo and not hide_results:
+        if explain:
+            print("\n===========================================================")
+#        else:
+#            print "\n"
+        print("%s %s" % (prefix, line))
+        if explain:
+            print("===========================================================")
+    if not result:
+        result = C_statement(line)  # Tracking is line and position tracking on
+
+    if result.c_error:
+        print("Error: " + result.c_error)
+    else:
+        if not hide_results:
+            print("Evaluates to: %d %s %s" % (result.numeric_value(), result.hex(), "signed" if result.signed else "unsigned"))
+
+    # Print all the pieces
+
+    if explain and not hide_results:
+        print("\n----------------------------")
+        print(" How this was computed:")
+        print("----------------------------\n")
+        
+        depth_first_walk(result.line, result)
+
+    return result
+
+#-------------------------------------------------------- 
+#        hide_results  - True if results from this file should not be printed
+#-------------------------------------------------------- 
+
+def hide_results_for_file(filename):
+    return filename[0] == '_'
+        
+#-------------------------------------------------------- 
+#        do_command
+#
+#   If command begins with CMD_CHAR then it's a control
+#   command, not a C statement. Process it and return True.
+#   Otherwise return false.
+#-------------------------------------------------------- 
+
+def do_command(line):
+    global history, hide_results
+    
+    line = line.strip().lower()
+    if not line[0] == CMD_CHAR:
+        return False
+
+    #
+    # Process the command
+    #
+    cmd = line[1:]
+    if not cmd:
+        print("Command name missing after '*'")
+        return True
+
+    split_cmd = cmd.split()
+
+    # History
+    if "history".startswith(split_cmd[0]):
+        line_num = 1
+        if len(history) > 0:
+            for result in history:
+                do_a_line(result.line, echo=True, hide_results= hide_results, \
+                              explain=False, result = result,                 \
+                              prefix = ("%4d: " % line_num))
+                line_num = line_num + 1
+        else:
+            print("No C statements recorded in history list")
+
+
+    # Explain (Like history but with explanations)
+    elif "explain".startswith(split_cmd[0]):
+        local_history = history
+        line_num = 1
+
+
+        if len(split_cmd) > 2:
+            print("Correct form is \"%sexplain [line_number]\"" % CMD_CHAR)
+            return True
+
+        if len(split_cmd) == 2:             # if line number specified
+            try:
+                line_num = int(split_cmd[1])
+            except ValueError:
+                print("Line number %s to be explained is not numeric" % split_cmd[1])
+                return True
+            if line_num < 1 or line_num > len(history):
+                print("Line number %d out of range" % line_num)
+                return True
+            local_history = [history[line_num -1 ]] # fake history with a single line
+
+        if len(local_history) > 0:
+            for result in local_history:
+                do_a_line(result.line, echo=True, hide_results= hide_results, \
+                              explain=True, result = result,                 \
+                              prefix = ("%4d: " % line_num))
+                line_num = line_num + 1
+        else:
+            print("No C statements recorded in history list")
+    # Explain (Like history but with explanations)
+    elif "clear".startswith(split_cmd[0]):
+        print("Clearing history: assigned variables remain set")
+        history = []
+    elif "save".startswith(split_cmd[0]):
+        filename = split_cmd[1]
+        if not filename:
+            print("Correct form is *save <filename>")
+        else:
+            with open(filename,"w") as outfile:
+                for l in history:
+                    print >> outfile, l.line
+            print("History saved to file: %s" % filename)
+    elif "quit".startswith(split_cmd[0]):
+        sys.exit(0)
+    else:
+        print("Unrecognized command: %s" % cmd)
+    
+
+    return True
+    
+    
+#-------------------------------------------------------- 
+#        Main (though lexing code has already run
+#-------------------------------------------------------- 
+        
+#
+#  Parse and handle command line arguments
+#    
+args = parseargs()
+
+echo = not args.noecho
+explain = args.explain
+hide_results = args.hide_results
+
+#
+# History and prompt
+#
+
+history = []             # List if results
+
+def prompt():
+    # next number in history list
+    exp_num = len(history) + 1
+    space = '' if exp_num >= 10 else ' '
+    return '' if (args.quiet)  else ('%s[%d] C expression > ' % \
+                                         (space, exp_num))
+
+#
+# Do any files named on command line
+#
+files = args.files
+if len(files) == 0:
+    files = [STDIN_FILENAME]      # if no filename, then read stdin only
+
+#
+# Add default file if it exists
+#
+
+# NOTE: --no-default arg turns into args_nodefault (avoids minus sign)
+if (not args.no_default) and os.access(DEFAULT_INPUT_FILENAME, os.R_OK):
+    files.insert(0, DEFAULT_INPUT_FILENAME)       # do default file first
+    
+#
+# Do any files named on command line
+#
+for f in files:
+    if f == STDIN_FILENAME:
+        while 1:
+            try:
+                s = raw_input(prompt())
+            except EOFError:
+                break
+            if not s:
+                continue
+            if (not do_command(s)):
+                result = do_a_line(s, echo=False, explain=explain, hide_results = hide_results)
+                history.append(result)
+    else:
+        with open(f, 'r') as fd:
+            file_lines = fd.readlines()
+            for line in file_lines:
+                l = line.strip()
+                if len(l) > 0:
+                    hide = hide_results or hide_results_for_file(f)
+                    result = do_a_line(l, echo=echo, explain=explain, \
+                              hide_results = hide)
+                    if not hide:
+                        history.append(result)
+
+
+# Newline in case there was an interactive prompt
+print 

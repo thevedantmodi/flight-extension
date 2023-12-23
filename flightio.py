@@ -12,47 +12,59 @@
 ##############################################################
 
 from itinerary import Itinerary
+import sys
 
 class FlightIO:
     # Variables
     MAX_NUM_FLIGHTS = 7
     MIN_NUM_FLIGHTS = 0
-
     num_flights = 0
 
     flights = list()
 
-    def __init__(self, switch):
-        if (switch == True):
-            self.inputInfo()
+    def __init__(self, action, file):
+        if (action == True):
+            self.inputInfo(file)
         else:
-            self.outputInfo()
-        pass
+            self.outputInfo(file)
 
 
-
-    def inputInfo(self):
-        self.__parse_num_flights()
-        self.__parse_all_flights()
+    def inputInfo(self, file):
+        self.__parse_num_flights(file)
+        self.__parse_all_flights(file)
         
+        self.__write_compressed()
+    
+    def __write_compressed(self):
+        print(self.num_flights)
         for fl in self.flights:
             fl.print_object()
-
-        pass
-
-    # After this function, num flights should be initialised 
-    def __parse_num_flights(self):
-        self.num_flights = int(input("Number of flights:\n"))
-        assert(self.num_flights <= self.MAX_NUM_FLIGHTS 
-               and self.num_flights >= self.MIN_NUM_FLIGHTS)
-        
-        
-        
-    def __parse_all_flights(self):
+    
+    def __write_decompressed(self):
+        print(self.num_flights)
+        for fl in self.flights:
+            fl.print_object_as_input()
+    
+    def __parse_num_flights(self, file):
+         # Get the first line only to get the number of flights
+        if file == sys.stdin: print("Number of flights:") 
+        self.num_flights = int(file.readline().rstrip())
+    
+    def __parse_all_flights(self, file):
         for pos in range(self.num_flights):
-            itin = Itinerary() # Input info is done in Itinerary.__init__()
+            itin = Itinerary('i', file)
             self.flights.append(itin)
-        
-    def outputInfo(self):
-        print("Decompressing")
+    
+    def __build_flights(self, file):
+        line_count = 0
+        while (line_count != self.num_flights):
+        # for line in file: # Goes through all flights in file
+            itin = Itinerary('o', file)
+            self.flights.append(itin)
+            line_count = line_count + 1
+    
+    def outputInfo(self, file):
+        self.__parse_num_flights(file)
+        self.__build_flights(file)
+        self.__write_decompressed()
         pass
