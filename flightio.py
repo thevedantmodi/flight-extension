@@ -67,4 +67,3 @@ class FlightIO:
         self.__parse_num_flights(file)
         self.__build_flights(file)
         self.__write_decompressed()
-        pass

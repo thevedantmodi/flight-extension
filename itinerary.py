@@ -40,6 +40,7 @@ class Itinerary:
 
     carrier = ""
     flight_no = -1
+    pretty_flight_no = ""
     dept_code = ""
     dept_date = datetime(1970, 1, 1) # UTC time, store offset separately
 
@@ -81,7 +82,8 @@ class Itinerary:
         
         
     def print_object(self):
-        print(self.carrier, self.flight_no, \
+        self.__clean_flight_no(self.flight_no)
+        print(self.carrier, self.pretty_flight_no, \
             self.dept_code, self.dept_date.isoformat(),
             self.arr_code, self.arr_date.isoformat())
         
@@ -136,16 +138,14 @@ class Itinerary:
         assert(self.carrier.isupper())
         assert(len(self.carrier) == self.CARRIER_LENGTH)
         
+    # propagate 0's if the greater digits are not there
     def __clean_flight_no(self, fl_num):
-        # propagate 0's if the greater digits are not there
-        if (len(fl_num) != self.FLIGHT_NO_LEN):
-            return fl_num.zfill(4) 
-        else:
-            return fl_num
+        self.pretty_flight_no = str(fl_num)
+        if len(str(fl_num)) != self.FLIGHT_NO_LEN:
+            self.pretty_flight_no = self.pretty_flight_no.zfill(4)
 
     def __parse_flight_no(self, fl_data):
-        fl_num = self.__clean_flight_no(fl_data)
-        self.flight_no = int(fl_num)
+        self.flight_no = int(fl_data)
         assert(self.flight_no >= self.MIN_FLIGHT_NO)
         assert(self.flight_no <= self.MAX_FLIGHT_NO)
     
