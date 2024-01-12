@@ -22,3 +22,5 @@ In graph form, this is the representation
                         Binary compressed file // C
 
 
+## TODO list
+- Change the date time output to just output fields, doesn't need to be ISO fmt date

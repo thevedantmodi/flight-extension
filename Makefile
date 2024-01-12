@@ -12,19 +12,20 @@
 
 
 CC = gcc
-IFLAGS = -I/usr/sup/cii40/include/cii
+IFLAGS = #-I/Users/vedantmodi/Desktop/dev-work/cii/include
 CFLAGS = -g -std=c99 -Wall -Wextra -Werror -Wfatal-errors -pedantic $(IFLAGS) -O2
-# LDFLAGS = -g -lcii40 -L/usr/sup/cii40/lib64
-# LDLIBS = -lcii40 -lm 
-DEPENDS = vfl-zip.o
+LDFLAGS = #-L /Users/vedantmodi/Desktop/dev-work/cii/lib
+LDLIBS = #-larray
+HEADERS = $(shell echo *.h)
+DEPENDS = vfl-zip.o compress-flight.o bitpack.o
 EXECS = vfl-zip
 
 all: $(EXECS)
 
-vfl: $(DEPENDS)
-	$(CC) $^ -o $@
+vfl-zip: $(DEPENDS)
+	$(CC) $^ -o $@ $(LDFLAGS) $(LDLIBS)
 
-%.o: %.c
+%.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:

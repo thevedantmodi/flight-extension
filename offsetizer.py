@@ -32,7 +32,7 @@ class Offsetizer:
         assert len(IATA) == 3
         assert IATA.isupper()
         
-        # Undefined behavior to localize before Unix Epoch when using
+        # Undefined behavior to localize before Unix Epoch when using datetime
         unix_epoch = datetime(1970, 1, 1)
         assert tmstmp >= unix_epoch
         
