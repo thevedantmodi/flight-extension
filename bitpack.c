@@ -13,10 +13,10 @@
  * that can shift by 64 bits.
  */
 
-static inline uint64_t shl(uint64_t word, unsigned bits)
+static inline __uint128_t shl(__uint128_t word, unsigned bits)
 {
-        assert(bits <= 64);
-        if (bits == 64)
+        assert(bits <= 128);
+        if (bits == 128)
                 return 0;
         else
                 return word << bits;
@@ -25,10 +25,10 @@ static inline uint64_t shl(uint64_t word, unsigned bits)
 /*
  * shift R logical
  */
-static inline uint64_t shr(uint64_t word, unsigned bits)
+static inline __uint128_t shr(__uint128_t word, unsigned bits)
 {
-        assert(bits <= 64);
-        if (bits == 64)
+        assert(bits <= 128);
+        if (bits == 128)
                 return 0;
         else
                 return word >> bits;
@@ -58,9 +58,9 @@ bool Bitpack_fitss( int64_t n, unsigned width)
         return narrow == n;
 }
 
-bool Bitpack_fitsu(uint64_t n, unsigned width)
+bool Bitpack_fitsu(__uint128_t n, unsigned width)
 {
-        assert(width <= 64);
+        assert(width <= 128);
         /* thanks to Jai Karve and John Bryan  */
         /* clever shortcut instead of 2 shifts */
         return shr(n, width) == 0; 
@@ -79,7 +79,7 @@ int64_t Bitpack_gets(uint64_t word, unsigned width, unsigned lsb)
                    64 - width);
 }
 
-uint64_t Bitpack_getu(uint64_t word, unsigned width, unsigned lsb)
+__uint128_t Bitpack_getu(__uint128_t word, unsigned width, unsigned lsb)
 {
         assert(width <= 64);
         unsigned hi = lsb + width; /* one beyond the most significant bit */
@@ -90,8 +90,8 @@ uint64_t Bitpack_getu(uint64_t word, unsigned width, unsigned lsb)
 }
 
 /****************************************************************/
-uint64_t Bitpack_newu(uint64_t word, unsigned width, unsigned lsb,
-                      uint64_t value)
+__uint128_t Bitpack_newu(__uint128_t word, unsigned width, unsigned lsb,
+                      __uint128_t value)
 {
         assert(width <= 64);
         unsigned hi = lsb + width; /* one beyond the most significant bit */
