@@ -12,11 +12,12 @@
 
 #include "compress-flight.h"
 #include "bitpack.h"
-// #include "flight-word.h"
 #include <assert.h>
 
 #define MIN_NUM_FLIGHTS 0
 #define MAX_NUM_FLIGHTS 255
+
+typedef __uint128_t Flight_T;
 
 
 void compress_flight(FILE *input)
@@ -29,7 +30,7 @@ void compress_flight(FILE *input)
     assert(num_flights <= MAX_NUM_FLIGHTS);
 
     /* alloc 128 bytes * number of flights */
-    
+    Flight_T *words = malloc(num_flights * sizeof(Flight_T));
 
 
     /* TODO:
@@ -44,6 +45,7 @@ void compress_flight(FILE *input)
     putchar(num_flights); /* Output the number of flights */
 
     /* Free number of flights array */
+    free(words);
 }
 
 void decompress_flight(FILE *input)
