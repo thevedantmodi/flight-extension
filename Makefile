@@ -17,7 +17,7 @@ CFLAGS = -g -std=c99 -Wall -Wextra -Werror -Wfatal-errors -pedantic $(IFLAGS) -O
 LDFLAGS = #-L /Users/vedantmodi/Desktop/dev-work/cii/lib
 LDLIBS = #-larray
 HEADERS = $(shell echo *.h)
-DEPENDS = vfl-zip.o compress-flight.o bitpack.o
+DEPENDS = vfl-zip.o compress-flight.o bitpack.o flight-pack.o
 EXECS = vfl-zip
 
 all: $(EXECS)

@@ -13,11 +13,21 @@
 #include "compress-flight.h"
 #include "bitpack.h"
 #include <assert.h>
+#include "flight-pack.h"
 
 #define MIN_NUM_FLIGHTS 0
 #define MAX_NUM_FLIGHTS 255
 
-typedef __uint128_t Flight_T;
+static Flight_T *Flights_new(unsigned size) {
+    Flight_T *words = malloc(size * sizeof(Flight_T));
+    assert(words != NULL);
+    return words;
+}
+
+static void Flights_free(Flight_T **list) {
+    assert(*list != NULL);
+    free(*list);
+}
 
 
 void compress_flight(FILE *input)
@@ -30,29 +40,30 @@ void compress_flight(FILE *input)
     assert(num_flights <= MAX_NUM_FLIGHTS);
 
     /* alloc 128 bytes * number of flights */
-    Flight_T *words = malloc(num_flights * sizeof(Flight_T));
+    Flight_T *words = Flights_new(num_flights);
 
-
-    /* TODO:
-        To proceed need
-        An unboxed array to store the words of each flight
-        A type that can hold 128 bytes
-     */
-
-    printf("Size of uint128_t is %lu", sizeof(__uint128_t));
 
 
     putchar(num_flights); /* Output the number of flights */
 
     /* Free number of flights array */
-    free(words);
+    Flights_free(&words);
+
 }
 
 void decompress_flight(FILE *input)
 {
     char num_flights;
-    fscanf(input, "%c", &num_flights);
+    num_flights = fgetc(input);
     printf("There are %d flights", num_flights);
+
+    Flight_T *words = Flights_new(num_flights);
+
+
+
+
+    Flights_free(&words);
+
     
     (void)input;
 }
