@@ -1,6 +1,20 @@
 1 flight in 128 bits
+10 + 14 + 15 + 15 + 2(7 + 5 + 4 + 5 + 6 + 10)
 
 Carrier - 10 bits (2 x 5 bits between 26 capital chars)
+127
+126
+125
+124
+123
+
+122
+121
+120
+119
+118
+
+
 Flight no. - 14 bits
 
 Code - 15 bits (3 x 5 bits between 26 capital chars)
@@ -57,3 +71,8 @@ Read in each flight, and
         Get hour
         Get minute
         Get UTC offset
+
+    
+====OUTPUT of (-c) IN BINARY====
+Number of flights is actually from 0 to 255
+    Output 1 char

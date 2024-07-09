@@ -88,11 +88,20 @@ class Itinerary:
             self.arr_code, self.arr_date.isoformat())
         
     def print_object_as_input(self):
-        print(self.carrier, self.flight_no, self.dept_code, \
-            self.dept_date.year, self.dept_date.month, self.dept_date.day, \
-            self.dept_date.hour, self.dept_date.minute,  self.arr_code, \
-            self.arr_date.year, self.arr_date.month, self.arr_date.day, \
-            self.arr_date.hour, self.arr_date.minute)
+        print(self.carrier, 
+              str(self.flight_no).zfill(4), 
+              self.dept_code,
+            str(self.dept_date.year).zfill(4),
+            str(self.dept_date.month).zfill(2), 
+            str(self.dept_date.day).zfill(2),
+            str(self.dept_date.hour).zfill(2),
+            str(self.dept_date.minute).zfill(2),
+            self.arr_code,
+            str(self.arr_date.year).zfill(4),
+            str(self.arr_date.month).zfill(2),
+            str(self.arr_date.day).zfill(2),
+            str(self.arr_date.hour).zfill(2), 
+            str(self.arr_date.minute).zfill(2))
     
         # print("\033[1m Departure:\033[0m",self.dept_code, \
         #     self.dept_date.isoformat())
