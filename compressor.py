@@ -15,6 +15,7 @@
 import sys
 
 from bitpack import Bitpack
+from itinerary import Itinerary
 
 
 class Compressor:  
@@ -43,11 +44,15 @@ class Compressor:
             word = 0x_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00
             car1, car2 = self._quantize_carrier(f.carrier)
             
-            sys.stdout.write(chr(car1))
+            # sys.stdout.write((chr(car1)))
             # sys.stdout.write(str(car2.to_bytes()))
             
+            print(bin(word))
             word = b.set(word, 5, 123, car1)
+            print(bin(word))
             word = b.set(word, 5, 118, car2)
+            print(bin(word))
+            
             
             # assert(b.get(word, 5, 123) == car1)
             # # print(b.get(word, 5, 118))
@@ -63,9 +68,21 @@ class Compressor:
     def decompress(self, file):
         
         num_flights = ord(file.read(1))
-        print(num_flights)
-        # print(type(num_flights))
-        pass
+        
+        flights = [Itinerary('o', file)] * num_flights
+        
+        for fl in flights:
+            # Read in a 128-bit (16-byte) word from file
+            # word_parts = []
+            # bytes_read = 0
+            # while bytes_read < 16:
+            #     word_parts.append(ord(file.read(1)))
+            b = Bitpack()
+            # word = ord(file.read(16))
+            
+            # b.get(word, 10, 123)
+            
+            pass 
     
     def _quantize_alpha(self, letter):
         return self.letters.index(letter)

@@ -52,7 +52,8 @@ class Itinerary:
     def __init__(self, action, file) -> None:
         if action == 'i': # Inputting flight
             promptMsg = False
-            if file == sys.stdin: promptMsg = True
+            if file == sys.stdin: 
+                promptMsg = True
             
             if promptMsg:
                 print("Format:")
